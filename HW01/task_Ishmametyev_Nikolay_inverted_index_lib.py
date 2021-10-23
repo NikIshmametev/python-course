@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import json
+from collections import defaultdict
 from typing import Dict, List
 
 
@@ -34,11 +35,13 @@ class InvertedIndex:
         return list(possible)
 
     def dump(self, filepath: str) -> None:
+        """Save Inverted Index in the filepath"""
         with open(filepath, 'w') as f:
             json.dump(self.index, f)
 
     @classmethod
     def load(cls, filepath: str) -> InvertedIndex:
+        """Load Inverted Index from filepath"""
         with open(filepath, 'r') as f:
             index = json.load(f)
         return InvertedIndex(index)
@@ -55,15 +58,12 @@ def load_documents(filepath: str) -> Dict[int, str]:
 
 
 def build_inverted_index(documents: Dict[int, str]) -> InvertedIndex:
-    index = {}
+    index = defaultdict(list)
     for key, content in documents.items():
         words = re.split(r"\W+", content)
         for word in set(words):
-            if word not in index:
-                index[word] = [key]
-            else:
-                if key not in index[word]:
-                    index[word].append(key)
+            if word not in index or key not in index[word]:
+                index[word].append(key)
     return InvertedIndex(index)
 
 
